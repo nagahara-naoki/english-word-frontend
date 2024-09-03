@@ -28,7 +28,7 @@ export default function WordList(props: any) {
   };
 
   // 値が変更されたときに呼ばれる関数
-  const handleChange = (event) => {
+  const handleChange = (event: any) => {
     setSelectedValue(event.target.value);
   };
 
