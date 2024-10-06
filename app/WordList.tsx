@@ -1,30 +1,35 @@
 import { useRouter } from "next/navigation";
-import React, { useEffect, useState } from "react";
-import { useDispatch } from "react-redux";
-import { setQuizListAction } from "./Redux/quizListSlice";
+import React, { useEffect, useRef, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  selectIsQuizMode,
+  setLoading,
+  setQuizListAction,
+} from "./Redux/quizListSlice";
+import { gsap } from "gsap";
+import { QUIZ_COUNT, QUIZ_LIST } from "./const";
+import { mouesLeaveAnimate, mouseEnterAnimate } from "./animate";
 
 export default function WordList() {
   const [selectedValue, setSelectedValue] = useState(0);
   const [selectedWord, setSelectedWord] = useState("");
-  const [buttonValidate, setButtonValiDate] = useState(true);
-  const router = useRouter();
-  const dispatch = useDispatch();
-  const quizList: { [key: string]: string } = {
-    junior: "中学英語",
-    highschool1: "高校英語１",
-    highschool2: "高校英語2",
-    highschool3: "高校英語3",
-    toeic1: "TOEIC1",
-    toeic2: "TOEIC2",
-    toeic3: "TOEIC3",
-  };
+  const [allSelected, setAllSelected] = useState(false);
+  const [showNextButtons, setShowNextButtons] = useState(false);
 
-  const quizCount = [10, 30, 50];
-  const [isLoading, setIsLoading] = useState(false);
+  const dispatch = useDispatch();
+  const router = useRouter();
+  const quizList = QUIZ_LIST;
+  const quizCount = QUIZ_COUNT;
+
+  const buttonRef = useRef<any>(null);
+  const nextButtonsRef = useRef<any>(null);
+  const buttonRef1 = useRef<any>([]);
+  const buttonRef2 = useRef<any>([]);
+
+  const isQuizMode = useSelector(selectIsQuizMode);
 
   const fetchData = async () => {
-    setIsLoading(true);
-
+    dispatch(setLoading());
     const api =
       String(process.env.getApi) +
       "/word-quiz/" +
@@ -33,84 +38,128 @@ export default function WordList() {
       selectedValue;
     const response = await fetch(api);
     const result = await response.json();
-
     if (result && Object.keys(result)?.length) {
-      router.push("/quizMode");
-      dispatch(setQuizListAction(result));
+      setTimeout(() => {
+        dispatch(setQuizListAction(result));
+        router.push("/quizMode");
+      }, 3000);
     }
   };
 
-  useEffect(() => {
-    handleValidate();
-  }, [selectedWord, selectedValue]);
-
   const handleSelectedWord = (type: string) => {
     setSelectedWord(type);
+    setShowNextButtons(true);
   };
 
   const handleQuizCount = (e: number) => {
     setSelectedValue(e);
+    setAllSelected(true);
   };
 
-  const handleValidate = () => {
-    if (selectedWord !== "" && selectedValue !== 0 && selectedValue <= 50) {
-      setButtonValiDate(false);
-    } else {
-      setButtonValiDate(true);
+  const cardAnimation = () => {
+    const timeline = gsap.timeline();
+    timeline.fromTo(
+      nextButtonsRef.current.children,
+      { opacity: 0, scaleX: 0, transformOrigin: "center" }, // 中央から開始
+      { opacity: 1, scaleX: 1, duration: 0.5, stagger: 0.2 } // アニメーション
+    );
+  };
+
+  useEffect(() => {
+    cardAnimation();
+  }, []);
+
+  useEffect(() => {
+    cardAnimation();
+  }, [showNextButtons]);
+
+  useEffect(() => {
+    if (allSelected && buttonRef.current) {
+      // ボタンの初期状態を設定
+      gsap.set(buttonRef.current, { opacity: 0, y: 20 }); // 下から出現
+
+      // アニメーションを実行
+      gsap.to(buttonRef.current, {
+        opacity: 1,
+        y: 0,
+        duration: 0.5,
+        ease: "bounce.out", // バウンス効果
+      });
     }
+  }, [allSelected]); // allSelectedが変わったときに実行
+
+  const handleMouseEnter = (btn: any, index: number) => {
+    gsap.to(btn.current[index], mouseEnterAnimate);
+  };
+
+  const handleMouseLeave = (btn: any, index: number) => {
+    gsap.to(btn.current[index], mouesLeaveAnimate);
   };
 
   return (
     <div className="flex flex-col gap-6">
-      {!isLoading && (
-        <div className="flex flex-col gap-4">
-          <div>
-            <p>問題一覧</p>
-            {Object.keys(quizList).map((e) => (
+      <div className="flex flex-col gap-4">
+        <div>
+          <p className="text-color_white">カテゴリーを選択してください</p>
+          <div ref={nextButtonsRef}>
+            {Object.keys(quizList).map((e, i) => (
               <button
+                ref={(el) => {
+                  buttonRef1.current[i] = el; // voidを返すように修正
+                }}
+                onMouseEnter={() => handleMouseEnter(buttonRef1, i)} // indexを渡す
+                onMouseLeave={() => handleMouseLeave(buttonRef1, i)} // indexを渡す
                 key={e}
-                className={`m-2 rounded p-1 transition-all ${
-                  selectedWord === e ? "bg-blue-500 text-white" : "bg-gray-300"
-                } active:bg-gray-300 hover:bg-blue-500 hover:opacity-80 hover:text-white`}
+                className={`m-2 rounded p-2 ${
+                  selectedWord === e
+                    ? "bg-color_green text-white" // 選択された場合はダークグリーン
+                    : "bg-gray-300"
+                } active:bg-gray-300 hover:bg-color_green hover:text-white hover:scale-105 `}
                 onClick={() => handleSelectedWord(e)}
               >
                 {quizList[e]}
               </button>
             ))}
           </div>
+        </div>
+        {showNextButtons && (
           <div>
             <div className="flex gap-2 items-end">
-              <p>問題数</p>
-              {/* <p className="text-gray-400 text-sm">
-            10~50個の中で問題数を入力してください
-          </p> */}
+              <p className="text-color_white">問題数を選択してください</p>
             </div>
-            {quizCount.map((e) => (
-              <button
-                key={e}
-                className={`m-2 rounded p-1 transition-all ${
-                  selectedValue === e ? "bg-blue-500 text-white" : "bg-gray-300"
-                } active:bg-gray-300 hover:bg-blue-500 hover:opacity-80 hover:text-white`}
-                onClick={() => handleQuizCount(e)}
-              >
-                {e}個
-              </button>
-            ))}
+            <div ref={nextButtonsRef}>
+              {quizCount.map((e, i) => (
+                <button
+                  ref={(el) => {
+                    buttonRef2.current[i] = el; // voidを返すように修正
+                  }}
+                  onMouseEnter={() => handleMouseEnter(buttonRef2, i)} // indexを渡す
+                  onMouseLeave={() => handleMouseLeave(buttonRef2, i)} // indexを渡す
+                  key={e}
+                  className={`m-2 rounded p-2 ${
+                    selectedValue === e
+                      ? "bg-color_green text-white" // 選択された場合はダークグリーン
+                      : "bg-gray-300"
+                  } active:bg-gray-300 hover:bg-color_green hover:text-white hover:scale-105`}
+                  onClick={() => handleQuizCount(e)}
+                >
+                  {e}個
+                </button>
+              ))}
+            </div>
           </div>
-          <div>
+        )}
+        {allSelected && (
+          <div ref={buttonRef}>
             <button
-              disabled={buttonValidate || isLoading}
               onClick={fetchData}
-              className={`${
-                buttonValidate || isLoading ? "bg-gray-300" : "bg-blue-500"
-              }  text-white m-2 p-2 rounded-md`}
+              className={`bg-color_green text-white m-2 mt-5 p-2 rounded-md shadow-lg transition-transform transform hover:scale-105 active:scale-95`}
             >
               問題を作成する
             </button>
           </div>
-        </div>
-      )}
-      {isLoading && <div>問題を作成中です...</div>}
+        )}
+      </div>
     </div>
   );
 }
