@@ -25,6 +25,7 @@
 body {
   background: linear-gradient(180deg, #0d0d0d 0%, #1a1a1a 50%, #333333 100%);
   font-family: ui-monospace !important;
+  overflow: hidden;
 }
 
 /* styles/globals.css に追加 */
