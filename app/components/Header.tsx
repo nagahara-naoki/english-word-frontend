@@ -39,7 +39,7 @@ export default function Header() {
         ref={titleRef}
         className="text-6xl font-bold text-white relative z-10"
       >
-        English Words Quiz
+        English Word Quiz
       </h1>
     </div>
   );

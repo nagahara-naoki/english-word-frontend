@@ -153,7 +153,7 @@ export default function WordList() {
           <div ref={buttonRef}>
             <button
               onClick={fetchData}
-              className={`bg-color_green text-white m-2 mt-5 p-2 rounded-md shadow-lg transition-transform transform hover:scale-105 active:scale-95`}
+              className={`bg-color_green text-white animate-bounce m-2 mt-5 p-2 rounded-md shadow-lg transition-transform transform hover:scale-105 active:scale-95`}
             >
               問題を作成する
             </button>

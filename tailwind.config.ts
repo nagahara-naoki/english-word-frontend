@@ -21,6 +21,8 @@ const config: Config = {
         color_blue: "#1E3A8A",
         color_orange: "#F97316",
         custom_border: "rgba(255, 255, 255, 0.5)",
+        color_bgRed: "rgb(254 226 226)",
+        color_green2: "rgb(22 163 74 )",
       },
 
       extend: {

@@ -20,17 +20,6 @@ export default function Page() {
   const data = useSelector((state: any) => {
     return state.data.quizLists;
   });
-
-  const questionKeys = Object.keys(data); // 問題オブジェクトのキーを取得
-  const [currentKey, setCurrentKey] = useState(questionKeys[0]); // 最初の問題のキーを設定
-  const router = useRouter();
-  const [isAnswer, setIsAnswer] = useState(false);
-  const [counter, setCounter] = useState(1);
-  const [finishQuestion, setFinishQuestion] = useState(false);
-  const [totalAnswer, setTotalAnswer] = useState(0);
-  const cardRef = useRef(null);
-  const buttonRef = useRef(null);
-
   // const data: any = {
   //   10: {
   //     desc: "いつも",
@@ -63,9 +52,20 @@ export default function Page() {
   //     word: "always3",
   //   },
   // };
-  // if (!questionKeys?.length) {
-  //   router.push("/");
-  // }
+
+  const questionKeys = Object.keys(data); // 問題オブジェクトのキーを取得
+  const [currentKey, setCurrentKey] = useState(questionKeys[0]); // 最初の問題のキーを設定
+  const router = useRouter();
+  const [isAnswer, setIsAnswer] = useState(false);
+  const [counter, setCounter] = useState(1);
+  const [finishQuestion, setFinishQuestion] = useState(false);
+  const [totalAnswer, setTotalAnswer] = useState(0);
+  const cardRef = useRef(null);
+  const buttonRef = useRef(null);
+
+  if (!questionKeys?.length) {
+    router.push("/");
+  }
 
   useEffect(() => {
     gsap.to(buttonRef.current, quizButtonAnimate);
@@ -150,7 +150,7 @@ export default function Page() {
     <div className="h-screen">
       <div className="h-full flex items-center justify-center" ref={cardRef}>
         {!finishQuestion && data && (
-          <div className="bg-color_white/50 rounded-2xl z-20 p-10 shadow-2xl backdrop-blur-3xl">
+          <div className="bg-color_white rounded-2xl z-20 p-10 shadow-2xl backdrop-blur-3xl">
             <div className="text-color_white">
               <div className="flex gap-6 items-end">
                 <p className="text-black font-bold">
@@ -164,7 +164,7 @@ export default function Page() {
                   <FaHome size={24} color="black" />
                 </div>
               </div>
-              <p className="text-center p-8 text-5xl font-bold text-black">
+              <p className="text-center p-8 mb-3 text-5xl font-bold text-black">
                 {data[currentKey]?.word}
               </p>
             </div>
@@ -185,8 +185,8 @@ export default function Page() {
                     ) : null}
                     <button
                       className={`h-full rounded p-4 transition-all transform w-full
-                text-white min-w-80 border border-white border-opacity-30
-                hover:bg-white hover:opacity-80 hover:text-black 
+                text-black min-w-80 border border-black border-opacity-30
+                hover:bg-color_green hover:opacity-80 hover:text-white hover:border-none
                 hover:scale-105 ${
                   // ホバー時にスケールを拡大
                   isAnswer ? "pointer-events-none" : ""
@@ -206,7 +206,7 @@ export default function Page() {
           </div>
         )}
         {finishQuestion && (
-          <div className="flex items-center justify-center bg-color_white/50 rounded-2xl z-20 p-10 shadow-2xl backdrop-blur-3xl">
+          <div className="flex items-center justify-center bg-color_white rounded-2xl z-20 p-10 shadow-2xl backdrop-blur-3xl">
             <div className="min-w-96">
               <p className="text-center font-bold text-xl">お疲れ様でした</p>
               <div className="m-8 flex flex-col gap-3 ">
@@ -225,7 +225,7 @@ export default function Page() {
                 </p>
               </div>
               <button
-                className="bg-black text-white text-center p-2 rounded-sm transition-all hover:opacity-60"
+                className="bg-black text-white text-center p-2 rounded-md transition-all hover:opacity-60"
                 onClick={toMissPage}
               >
                 間違えた問題を見る
@@ -238,13 +238,6 @@ export default function Page() {
                 >
                   ホームへ
                 </button>
-                {/* <button
-                  onClick={replayQuiz}
-                  className=" p-2 rounded whitespace-nowrap transition-all w-full
-                  bg-blue-500 text-white"
-                >
-                  やり直す
-                </button> */}
               </div>
             </div>
           </div>
